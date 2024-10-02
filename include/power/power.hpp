@@ -66,10 +66,10 @@ public:
     }//微安
     double get_Power()
     {
-        double voltage = get_Voltage();
-        double current = get_Current();
-        return (voltage * current) / 1e6;
-    }
+        double voltage = get_Voltage() * 1e-6;
+        double current = get_Current() * 1e-6;
+        return (voltage * current) ;
+    }//瓦
     bool edit_current(int FastChargeCurrent, int ThermalChargeCurrent)
     {
         FastCharge_file->trunc_write(std::to_string(FastChargeCurrent));
