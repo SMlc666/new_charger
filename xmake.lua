@@ -1,10 +1,26 @@
-add_rules("mode.debug", "mode.release")
-
-target("new_charger")
+set_languages("cxx17")  -- 设置 C++ 标准
+if is_mode("debug") then
+    set_warnings("all")
+    set_optimize("none")
+    set_symbols("debug")   -- 打开调试符号
+else
+    set_optimize("fastest")  -- 设置快速优化
+    set_symbols("hidden")
+    set_strip("all")
+    set_optimize("fastest")
+end
+target("main")
+    add_includedirs(
+    "include/Log",
+    "include/power",
+    "include/config",
+    "include/activity"
+    )
+    set_arch("arm64-v8a")
     set_kind("binary")
     add_files("src/*.cpp")
+target_end()
 
---
 -- If you want to known more usage about xmake, please see https://xmake.io
 --
 -- ## FAQ
