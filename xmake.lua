@@ -1,3 +1,4 @@
+add_rules("mode.debug", "mode.release")  -- 添加 debug 和 release 模式
 set_languages("cxx17")  -- 设置 C++ 标准
 if is_mode("debug") then
     set_warnings("all")

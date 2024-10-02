@@ -1,18 +1,27 @@
 #include <fstream>
 #include <memory>
 #include <sstream>
-
+#include <cstring>
 class File
 {
 private:
     void enable_rw()
     {
-        mode_t m_mode = 0777;
-        if (chmod(filename.c_str(), m_mode) == -1)
+        // 仅在文件存在的情况下尝试更改权限
+        if (access(filename.c_str(), F_OK) == 0)
         {
-            logger.write(LogLevel::ERROR, filename + "Cannot chmod to make it modifiable");
+            mode_t m_mode = 0777;
+            if (chmod(filename.c_str(), m_mode) == -1)
+            {
+                logger.write(LogLevel::ERROR, filename + " Cannot chmod to make it modifiable. Error: " + std::strerror(errno));
+            }
+        }
+        else
+        {
+            logger.write(LogLevel::ERROR, filename + " does not exist. Cannot change permissions.");
         }
     }
+
     std::unique_ptr<std::fstream> file_stream;
     std::string filename;
     Log &logger;
@@ -35,7 +44,8 @@ public:
         *buffer = ss.str();         // 将内容存入传入的 buffer
     }
     template <typename T>
-    T get_value(){
+    T get_value()
+    {
         std::string buffer;
         read_all(&buffer);
         std::stringstream ss(buffer);
@@ -56,12 +66,14 @@ public:
         file_stream->write(buffer.c_str(), buffer.size());
         file_stream->flush();
     }
-    File(const std::string &filename, Log &logger) : logger(logger)
+    File(const std::string Filename, Log &logger) : logger(logger)
     {
-        file_stream = std::make_unique<std::fstream>(filename, std::ios::in | std::ios::out);
-        if (!file_stream->is_open())
+        filename = Filename;
+        enable_rw();
+        file_stream = std::make_unique<std::fstream>(Filename, std::ios::in | std::ios::out | std::ios::app);
+        if (!file_stream || !file_stream->is_open())
         {
-            logger.write(LogLevel::ERROR, "Failed to open file: " + filename);
+            logger.write(LogLevel::ERROR, "Failed to open file: " + Filename);
             return;
         }
     }
