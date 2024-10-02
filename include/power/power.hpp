@@ -52,23 +52,23 @@ public:
 
     float get_Temp()
     {
-        return Temp_file->get_value<float>();
+        return Temp_file->get_value<float>() / 10;
     }
 
     double get_Voltage()
     {
         return Voltage_file->get_value<double>();
-    }
+    }//微伏
 
     double get_Current()
     {
         return Current_file->get_value<double>();
-    }
+    }//微安
     double get_Power()
     {
         double voltage = get_Voltage();
         double current = get_Current();
-        return voltage * current;
+        return (voltage * current) / 1e6;
     }
     bool edit_current(int FastChargeCurrent, int ThermalChargeCurrent)
     {

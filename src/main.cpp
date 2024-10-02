@@ -17,8 +17,8 @@ struct Charge_Info{
     bool FastCharge_Status = false;
     int FastCharge_Current;
     int Bypass_Current;
-    int Input_WaitTime;
-    int Battery_Info_WaitTime;
+    int Input_WaitTime = 5;
+    int Battery_Info_WaitTime = 120;
     Bypass_Event Event = Bypass_Event::None;
     BypassMode Mode;
 };
@@ -65,6 +65,8 @@ void info(){
 int main(){
     std::thread lock_t(lock);
     lock_t.detach();
+    std::thread info_t(info);
+    info_t.detach();
     logger.write(LogLevel::INFO,"旁路供电模块加载完成");
     while (true){
         auto config = config_tool.get_config();
