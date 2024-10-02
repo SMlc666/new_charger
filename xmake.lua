@@ -14,7 +14,8 @@ target("main")
     "include/Log",
     "include/power",
     "include/config",
-    "include/activity"
+    "include/activity",
+    "include/file"
     )
     set_arch("arm64-v8a")
     set_kind("binary")
