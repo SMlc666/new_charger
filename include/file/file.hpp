@@ -31,7 +31,7 @@ public:
     {
         return filename;
     }
-    void read_all(std::string *buffer)
+    void read_Line(std::string *buffer, int line = 1)
     {
         enable_rw();
         if (!file_stream || !file_stream->is_open())
@@ -39,15 +39,31 @@ public:
             logger.write(LogLevel::ERROR, "File stream is not open.");
             return;
         }
-        std::stringstream ss;
-        ss << file_stream->rdbuf(); // 读取文件流的内容
-        *buffer = ss.str();         // 将内容存入传入的 buffer
+    
+        file_stream->clear(); // Clear any error flags
+        file_stream->seekg(0, std::ios::beg); // Move to the beginning of the file
+    
+        std::string temp;
+        int current_line = 1;
+    
+        while (std::getline(*file_stream, temp))
+        {
+            if (current_line == line)
+            {
+                *buffer = temp;
+                return;
+            }
+            current_line++;
+        }
+    
+        logger.write(LogLevel::ERROR, "Specified line number exceeds the total number of lines in the file.");
     }
+
     template <typename T>
-    T get_value()
+    T get_value(int Line = 1)
     {
         std::string buffer;
-        read_all(&buffer);
+        read_Line(&buffer,Line);
         std::stringstream ss(buffer);
         T value;
         ss >> value;

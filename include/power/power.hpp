@@ -40,10 +40,8 @@ public:
     {
         std::string buffer;
         std::string buffer1;
-        FastCharge_file->read_all(&buffer);
-        logger.write(LogLevel::INFO, "Origin_FastCharge_Current: " + buffer);
-        ThermalCharge_file->read_all(&buffer1);
-        logger.write(LogLevel::INFO, "Origin_ThermalCharge_Current: " + buffer1);
+        FastCharge_file->read_Line(&buffer);
+        ThermalCharge_file->read_Line(&buffer1);
         Origin_FastCharge_Current = std::stoi(buffer);
         Origin_ThermalCharge_Current = std::stoi(buffer1);
     }
@@ -81,7 +79,7 @@ public:
     enum BatteryStatus get_Status()
     {
         std::string buffer;
-        Status_file->read_all(&buffer);
+        Status_file->read_Line(&buffer);
         if (buffer == "Charging")
         {
             return Charging;

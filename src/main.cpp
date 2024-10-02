@@ -12,11 +12,13 @@ enum Bypass_Event{
     Game
 };
 struct Charge_Info{
+    bool Battery_Info = false;
     bool Bypass_Status = false;
     bool FastCharge_Status = false;
     int FastCharge_Current;
     int Bypass_Current;
     int Input_WaitTime;
+    int Battery_Info_WaitTime;
     Bypass_Event Event = Bypass_Event::None;
     BypassMode Mode;
 };
@@ -51,6 +53,15 @@ void lock(){
         }
     }
 }
+void info(){
+    while(true){
+        float Temp = Power_tool.get_Temp();
+        int Capacity = Power_tool.get_Capacity();
+        double Power = Power_tool.get_Power();
+        logger.write(LogLevel::INFO,"电池温度:" + std::to_string(Temp) + "电池电量:" + std::to_string(Capacity) + "当前功耗:" + std::to_string(-Power));
+        std::this_thread::sleep_for(std::chrono::seconds(Info.Battery_Info_WaitTime));
+    }
+}
 int main(){
     std::thread lock_t(lock);
     lock_t.detach();
@@ -69,6 +80,14 @@ int main(){
         }else{
             logger.write(LogLevel::ERROR,"未知旁路模式:" + config["总开关"]["旁路模式"]);
             continue;
+        }
+        if (config["电池信息"]["总开关"] == "1"){
+            Info.Battery_Info = true;
+            Info.Battery_Info_WaitTime = std::stoi(config["电池信息"]["间隔时间"]);
+        }else if(config["电池信息"]["总开关"] == "0"){
+            Info.Battery_Info = false;
+        }else{
+            logger.write(LogLevel::ERROR,"未知电池信息选项:" + config["电池信息"]["总开关"]);
         }
         int FastChargeCurrent = std::stoi(config["闲时快充"]["快充电流"]);
         Info.FastCharge_Current = FastChargeCurrent;
