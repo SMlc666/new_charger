@@ -7,8 +7,8 @@
 class Activity
 {
 private:
-  Log &logger;
-  std::string execCommand(const char *cmd)
+  Log& logger;
+  std::string execCommand(const char* cmd)
   {
     std::array<char, 128> buffer;
     std::string result;
@@ -25,16 +25,16 @@ private:
   }
 
 public:
-  Activity(Log &logger) : logger(logger) {}
+  Activity(Log& logger) : logger(logger) {}
   std::string getForegroundAppPackageName()
   {
-    const char *cmd = "dumpsys window | grep 'mCurrentFocus'";
+    const char* cmd = "dumpsys window | grep 'mCurrentFocus'";
     std::string line;
     try
     {
       line = execCommand(cmd);
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
       // Log error: Command execution failed
       logger.write(LogLevel::ERROR, "Error executing command");
