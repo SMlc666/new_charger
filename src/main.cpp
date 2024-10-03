@@ -14,20 +14,35 @@ enum Bypass_Event
 };
 struct Charge_Info
 {
-    bool Battery_Info = false;
     bool Bypass_Status = false;
     bool FastCharge_Status = false;
-    int FastCharge_Current;
-    int Bypass_Current;
-    int Input_WaitTime = 5;
-    int Battery_Info_WaitTime = 120;
     Bypass_Event Event = Bypass_Event::None;
-    BypassMode Mode;
 };
-
+/// @brief 
+struct Bypass_Config {
+    bool Bypass_Status = false;
+    BypassMode Mode = BypassMode::Current;//旁路模式
+    int Input_WaitTime = 0;
+    int Bypass_Current = 0;
+    bool Bypass_Always = false;//一直开启旁路供电
+    bool Bypass_Temp_Status = false;//温度旁路供电
+    bool Bypass_Capacity_Status = false;//电量旁路供电
+    float Bypass_Temp_Close = 0;//旁路供电关闭温度
+    float Bypass_Temp_Open = 0;
+    int Bypass_Capacity_Close = 0;//旁路供电关闭电量
+    int Bypass_Capacity_Open = 0;
+    bool FastCharge_Status = false;//闲时快充
+    int FastCharge_Current = 0;//闲时快充电流
+    int FastCharge_CloseCapacity = 0;//闲时快充关闭电量
+    int FastCharge_CloseTemp = 0;//闲时快充关闭温度
+    bool Battery_Info = false;//显示电池信息
+    int Battery_Info_WaitTime = 0;
+    std::map<std::string, std::string> Game_List;//游戏列表
+};
 Log logger("/sdcard/test.txt", LogLevel::INFO);
 Config config_tool;
 power Power_tool(logger);
+Bypass_Config Bypass_config;
 Charge_Info Info;
 Activity activity_tool(logger);
 void lock()
@@ -51,13 +66,13 @@ void lock()
         if (Info.Bypass_Status)
         {
             bypass = true;
-            Mode = Info.Mode;
-            Power_tool.Bypass_Charger(true, Info.Mode, Info.Input_WaitTime, Info.Bypass_Current); // 恢复电流
+            Mode = Bypass_config.Mode;
+            Power_tool.Bypass_Charger(true, Bypass_config.Mode, Bypass_config.Input_WaitTime, Bypass_config.Bypass_Current); // 恢复电流
         }
         else if (Info.FastCharge_Status)
         {
             fastcharger = true;
-            Power_tool.edit_current(Info.FastCharge_Current, Info.FastCharge_Current);
+            Power_tool.edit_current(Bypass_config.FastCharge_Current, Bypass_config.FastCharge_Current);
         }
         else
         {
@@ -73,7 +88,7 @@ void info()
         int Capacity = Power_tool.get_Capacity();
         double Power = Power_tool.get_Power();
         logger.write(LogLevel::INFO, "电池温度:" + std::to_string(Temp) + "电池电量:" + std::to_string(Capacity) + "当前功耗:" + std::to_string(-Power));
-        std::this_thread::sleep_for(std::chrono::seconds(Info.Battery_Info_WaitTime));
+        std::this_thread::sleep_for(std::chrono::seconds(Bypass_config.Battery_Info_WaitTime));
     }
 }
 int main()
@@ -91,47 +106,49 @@ int main()
         int Capacity = Power_tool.get_Capacity();
         double Power = Power_tool.get_Power();
         BatteryStatus Status = Power_tool.get_Status();
-        if (config["总开关"]["旁路模式"] == "0")
+        try {
+            {
+                Bypass_config.Bypass_Status = config["总开关"]["开启旁路供电"] == "1";
+                Bypass_config.Mode = (BypassMode)std::stoi(config["总开关"]["旁路模式"]);
+                Bypass_config.Input_WaitTime = std::stoi(config["总开关"]["插拔间隔"]);
+                Bypass_config.Bypass_Current = std::stoi(config["总开关"]["旁路电流"]);
+                Bypass_config.Bypass_Always = config["总开关"]["一直开启旁路供电"] == "1";
+            }//总开关
+            {
+                Bypass_config.Bypass_Capacity_Status = config["电池电量"]["总开关"] == "1";
+                Bypass_config.Bypass_Capacity_Close = std::stoi(config["电池电量"]["关闭电量"]);
+                Bypass_config.Bypass_Capacity_Open = std::stoi(config["电池电量"]["开启电量"]);
+            }//电池电量
+            {
+                Bypass_config.Bypass_Temp_Status = config["电池温度"]["总开关"] == "1";
+                Bypass_config.Bypass_Temp_Open = std::stof(config["电池温度"]["开启温度"]);
+                Bypass_config.Bypass_Temp_Close = std::stof(config["电池温度"]["关闭温度"]);
+            }//电池温度
+            {
+                Bypass_config.FastCharge_Status = config["闲时快充"]["总开关"] == "1";
+                Bypass_config.FastCharge_Current = std::stoi(config["闲时快充"]["快充电流"]);
+                Bypass_config.FastCharge_CloseCapacity = std::stoi(config["闲时快充"]["关闭电量"]);
+                Bypass_config.FastCharge_CloseTemp = std::stof(config["闲时快充"]["关闭温度"]);
+            }//闲时快充
+            {
+                Bypass_config.Battery_Info = config["电池信息"]["间隔时间"] == "1";
+                Bypass_config.Battery_Info_WaitTime = std::stoi(config["电池信息"]["间隔时间"]);
+            }//电池信息
+            {
+                Bypass_config.Game_List = config["游戏"];
+            }//游戏
+        } catch (const std::exception& e) {
+            logger.write(LogLevel::ERROR, "Can't read config:" + std::string(e.what()));
+        }//从配置文件中读取配置
+        if (Bypass_config.Bypass_Status)
         {
-            Info.Mode = BypassMode::Current; // 电流模式
-        }
-        else if (config["总开关"]["旁路模式"] == "1")
-        {
-            Info.Mode = BypassMode::Night; // 夜间模式
-        }
-        else
-        {
-            logger.write(LogLevel::ERROR, "未知旁路模式:" + config["总开关"]["旁路模式"]);
-            continue;
-        }
-        if (config["电池信息"]["总开关"] == "1")
-        {
-            Info.Battery_Info = true;
-            Info.Battery_Info_WaitTime = std::stoi(config["电池信息"]["间隔时间"]);
-        }
-        else if (config["电池信息"]["总开关"] == "0")
-        {
-            Info.Battery_Info = false;
-        }
-        else
-        {
-            logger.write(LogLevel::ERROR, "未知电池信息选项:" + config["电池信息"]["总开关"]);
-        }
-        int FastChargeCurrent = std::stoi(config["闲时快充"]["快充电流"]);
-        Info.FastCharge_Current = FastChargeCurrent;
-        int BypassCurrent = std::stoi(config["总开关"]["电流"]);
-        Info.Bypass_Current = BypassCurrent;
-        int InputWaitTime = std::stoi(config["总开关"]["插拔间隔"]);
-        Info.Input_WaitTime = InputWaitTime;
-        if (config["总开关"]["开启旁路供电"] == "1")
-        {
-            if (config["总开关"]["一直开启旁路供电"] == "1" && !Info.Bypass_Status)
+            if (Bypass_config.Bypass_Always && !Info.Bypass_Status)
             {
                 Info.Bypass_Status = true;
                 Info.Event = Bypass_Event::Always;
                 logger.write(LogLevel::INFO, "一直开启旁路供电开启");
             }
-            else if (config["总开关"]["一直开启旁路供电"] == "0" && Info.Event == Bypass_Event::Always)
+            else if (!Bypass_config.Bypass_Always && Info.Event == Bypass_Event::Always)
             {
                 Info.Event = Bypass_Event::None;
                 Info.Bypass_Status = false;
@@ -147,7 +164,7 @@ int main()
             if (!Info.Bypass_Status || Info.Event == Bypass_Event::Game)
             {
                 bool findgame = false;
-                for (const auto &pair : config.find("游戏")->second)
+                for (const auto &pair : Bypass_config.Game_List)
                 {
                     if (activity_tool.getForegroundAppPackageName() == pair.second)
                     {
@@ -169,9 +186,9 @@ int main()
                     logger.write(LogLevel::INFO, "游戏旁路供电关闭");
                 }
             }
-            if (config["电池温度"]["总开关"] == "1")
+            if (Bypass_config.Bypass_Temp_Status)
             {
-                if (Info.Event == Bypass_Event::None && Temp >= std::stof(config["电池温度"]["开启温度"]))
+                if (Info.Event == Bypass_Event::None && Temp >= Bypass_config.Bypass_Temp_Open)
                 {
                     if (Info.FastCharge_Status)
                     {
@@ -182,14 +199,14 @@ int main()
                     Info.Bypass_Status = false;
                     continue;
                 }
-                else if (Info.Event == Bypass_Event::Temp && Temp < std::stof(config["电池温度"]["关闭温度"]))
+                else if (Info.Event == Bypass_Event::Temp && Temp < Bypass_config.Bypass_Temp_Close)
                 {
                     Info.Event = Bypass_Event::None;
                     Info.Bypass_Status = false;
                     logger.write(LogLevel::INFO, "温度旁路供电关闭");
                 }
             }
-            else if (config["电池温度"]["总开关"] == "0" && Info.Event == Bypass_Event::Temp)
+            else if (!Bypass_config.Bypass_Capacity_Status && Info.Event == Bypass_Event::Temp)
             {
                 Info.Event = Bypass_Event::None;
                 Info.Bypass_Status = false;
@@ -197,7 +214,7 @@ int main()
             }
             if (config["电池电量"]["总开关"] == "1")
             {
-                if (Info.Event == Bypass_Event::None && Capacity >= std::stoi(config["电池电量"]["开启电量"]))
+                if (Info.Event == Bypass_Event::None && Capacity >= Bypass_config.Bypass_Capacity_Open)
                 {
                     if (Info.FastCharge_Status)
                     {
@@ -208,33 +225,34 @@ int main()
                     Info.Bypass_Status = true;
                     continue;
                 }
-                else if (Info.Event == Bypass_Event::Capacity && Capacity < std::stoi(config["电池温度"]["关闭电量"]))
+                else if (Info.Event == Bypass_Event::Capacity && Capacity < Bypass_config.Bypass_Capacity_Close)
                 {
                     Info.Event = Bypass_Event::None;
                     Info.Bypass_Status = false;
                     logger.write(LogLevel::INFO, "电量旁路供电关闭");
                 }
             }
-            else if (config["电池温度"]["总开关"] == "0" && Info.Event == Bypass_Event::Capacity)
+            else if (!Bypass_config.Bypass_Capacity_Status && Info.Event == Bypass_Event::Capacity)
             {
                 Info.Event = Bypass_Event::None;
                 Info.Bypass_Status = false;
                 logger.write(LogLevel::INFO, "温度旁路供电关闭");
             }
-            if (config["闲时快充"]["总开关"] == "1")
+            if (Bypass_config.FastCharge_Status)
             {
-                if (!Info.Bypass_Status && !Info.FastCharge_Status && Capacity < std::stoi(config["闲时快充"]["关闭电量"]) && Temp < std::stof(config["闲时快充"]["关闭温度"]))
+                if (!Info.Bypass_Status && !Info.FastCharge_Status && Capacity < Bypass_config.FastCharge_CloseCapacity && Temp < Bypass_config.FastCharge_CloseTemp)
                 {
                     Info.FastCharge_Status = true;
                     logger.write(LogLevel::INFO, "闲时快充开启");
                 }
-                else if (Info.FastCharge_Status && (Capacity >= std::stoi(config["闲时快充"]["关闭电量"]) || Temp >= std::stof(config["闲时快充"]["关闭温度"])))
+                else if (Info.FastCharge_Status && ((Capacity >= Bypass_config.FastCharge_CloseCapacity) || (Temp >= Bypass_config.FastCharge_CloseTemp)))
+
                 {
                     Info.FastCharge_Status = false;
                     logger.write(LogLevel::INFO, "闲时快充关闭");
                 }
             }
-            else if (Info.FastCharge_Status && config["闲时快充"]["总开关"] == "0")
+            else if (Info.FastCharge_Status && !Bypass_config.FastCharge_Status)
             {
                 Info.FastCharge_Status = false;
                 logger.write(LogLevel::INFO, "闲时快充关闭");
