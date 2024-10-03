@@ -58,18 +58,18 @@ public:
     double get_Voltage()
     {
         return Voltage_file->get_value<double>();
-    }//微伏
+    } // 微伏
 
     double get_Current()
     {
         return Current_file->get_value<double>();
-    }//微安
+    } // 微安
     double get_Power()
     {
         double voltage = get_Voltage() * 1e-6;
         double current = get_Current() * 1e-6;
-        return (voltage * current) ;
-    }//瓦
+        return (voltage * current);
+    } // 瓦
     bool edit_current(int FastChargeCurrent, int ThermalChargeCurrent)
     {
         FastCharge_file->trunc_write(std::to_string(FastChargeCurrent));

@@ -39,13 +39,13 @@ public:
             logger.write(LogLevel::ERROR, "File stream is not open.");
             return;
         }
-    
-        file_stream->clear(); // Clear any error flags
+
+        file_stream->clear();                 // Clear any error flags
         file_stream->seekg(0, std::ios::beg); // Move to the beginning of the file
-    
+
         std::string temp;
         int current_line = 1;
-    
+
         while (std::getline(*file_stream, temp))
         {
             if (current_line == line)
@@ -55,7 +55,7 @@ public:
             }
             current_line++;
         }
-    
+
         logger.write(LogLevel::ERROR, "Specified line number exceeds the total number of lines in the file.");
     }
 
@@ -63,7 +63,7 @@ public:
     T get_value(int Line = 1)
     {
         std::string buffer;
-        read_Line(&buffer,Line);
+        read_Line(&buffer, Line);
         std::stringstream ss(buffer);
         T value;
         ss >> value;
