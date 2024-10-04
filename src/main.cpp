@@ -82,12 +82,27 @@ void lock()
 }
 void info()
 {
+    auto to_string = [](BatteryStatus status) -> std::string {
+        static const std::unordered_map<BatteryStatus, std::string> status_map = {
+            {BatteryStatus::Unknown, "Unknown"},
+            {BatteryStatus::Charging, "Charging"},
+            {BatteryStatus::Discharging, "Discharging"},
+            {BatteryStatus::Full, "Full"}
+        };
+    
+        auto it = status_map.find(status);
+        if (it != status_map.end()) {
+            return it->second;
+        }
+        return "Unknown";
+    };
     while (true)
     {
         float Temp = Power_tool.get_Temp();
         int Capacity = Power_tool.get_Capacity();
         double Power = Power_tool.get_Power();
-        logger.write(LogLevel::INFO, "电池温度:" + std::to_string(Temp) + "电池电量:" + std::to_string(Capacity) + "当前功耗:" + std::to_string(-Power));
+        BatteryStatus Status = Power_tool.get_Status();
+        logger.write(LogLevel::INFO, "电池温度:" + std::to_string(Temp) + "电池电量:" + std::to_string(Capacity) + "当前功耗:" + std::to_string(-Power) + "电池状态:" + to_string(Status));
         std::this_thread::sleep_for(std::chrono::seconds(Bypass_config.Battery_Info_WaitTime));
     }
 }
@@ -98,14 +113,23 @@ int main()
     std::thread info_t(info);
     info_t.detach();
     logger.write(LogLevel::INFO, "旁路供电模块加载完成");
+    float Temp;
+    int Capacity;
+    double Power;
+    BatteryStatus Status;
     while (true)
     {
         auto config = config_tool.get_config();
         std::this_thread::sleep_for(std::chrono::seconds(std::stoi(config["总开关"]["间隔时间"])));
-        float Temp = Power_tool.get_Temp();
-        int Capacity = Power_tool.get_Capacity();
-        double Power = Power_tool.get_Power();
-        BatteryStatus Status = Power_tool.get_Status();
+        try {
+            Temp = Power_tool.get_Temp();
+            Capacity = Power_tool.get_Capacity();
+            Power = Power_tool.get_Power();
+            Status = Power_tool.get_Status();
+        } catch (const std::exception& e){
+            logger.write(LogLevel::ERROR,"Read battery information failed");
+            continue;
+        }
         try {
             {
                 Bypass_config.Bypass_Status = config["总开关"]["开启旁路供电"] == "1";
@@ -139,6 +163,7 @@ int main()
             }//游戏
         } catch (const std::exception& e) {
             logger.write(LogLevel::ERROR, "Can't read config:" + std::string(e.what()));
+            continue;
         }//从配置文件中读取配置
         if (Bypass_config.Bypass_Status)
         {
@@ -239,24 +264,31 @@ int main()
                 logger.write(LogLevel::INFO, "温度旁路供电关闭");
             }
             if (Bypass_config.FastCharge_Status)
-            {
-                if (!Info.Bypass_Status && !Info.FastCharge_Status && Capacity < Bypass_config.FastCharge_CloseCapacity && Temp < Bypass_config.FastCharge_CloseTemp)
                 {
-                    Info.FastCharge_Status = true;
-                    logger.write(LogLevel::INFO, "闲时快充开启");
+                    if (!Info.Bypass_Status && !Info.FastCharge_Status && Capacity < Bypass_config.FastCharge_CloseCapacity && Temp < Bypass_config.FastCharge_CloseTemp)
+                    {
+                        Info.FastCharge_Status = true;
+                        logger.write(LogLevel::INFO, "闲时快充开启");
+                    }
+                    else if (Info.FastCharge_Status && ((Capacity >= Bypass_config.FastCharge_CloseCapacity) || (Temp >= Bypass_config.FastCharge_CloseTemp)))
+    
+                    {
+                        Info.FastCharge_Status = false;
+                        logger.write(LogLevel::INFO, "闲时快充关闭");
+                    }
                 }
-                else if (Info.FastCharge_Status && ((Capacity >= Bypass_config.FastCharge_CloseCapacity) || (Temp >= Bypass_config.FastCharge_CloseTemp)))
-
+                else if (Info.FastCharge_Status && !Bypass_config.FastCharge_Status)
                 {
                     Info.FastCharge_Status = false;
                     logger.write(LogLevel::INFO, "闲时快充关闭");
                 }
             }
-            else if (Info.FastCharge_Status && !Bypass_config.FastCharge_Status)
-            {
-                Info.FastCharge_Status = false;
-                logger.write(LogLevel::INFO, "闲时快充关闭");
-            }
+        else if (Status != BatteryStatus::Charging && (Info.Bypass_Status || Info.FastCharge_Status))
+        {
+            Info.Event = Bypass_Event::None;
+            Info.Bypass_Status = false;
+            Info.FastCharge_Status = false;
+            logger.write(LogLevel::INFO, "不处于充电状态,自动关闭功能");
         }
         else if (Status != BatteryStatus::Charging && (Info.Bypass_Status || Info.FastCharge_Status))
         {
