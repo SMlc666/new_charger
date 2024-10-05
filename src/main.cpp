@@ -23,6 +23,7 @@ struct Charge_Info
 struct Bypass_Config {
     bool Bypass_Status = false;
     BypassMode Mode = BypassMode::Current;//旁路模式
+    int Check_WaitTime = 0;
     int Input_WaitTime = 0;
     int Bypass_Current = 0;
     bool Bypass_Always = false;//一直开启旁路供电
@@ -53,7 +54,7 @@ void lock()
     BypassMode Mode;
     while (true)
     {
-        // std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         if (bypass && !Info.Bypass_Status)
         {
             bypass = false;
@@ -68,12 +69,12 @@ void lock()
         {
             bypass = true;
             Mode = Bypass_config.Mode;
-            Power_tool.Bypass_Charger(true, Bypass_config.Mode, Bypass_config.Input_WaitTime, Bypass_config.Bypass_Current); // 恢复电流
+            Power_tool.Bypass_Charger(true, Bypass_config.Mode, Bypass_config.Input_WaitTime, Bypass_config.Bypass_Current); // 锁定旁路
         }
         else if (Info.FastCharge_Status)
         {
             fastcharger = true;
-            Power_tool.edit_current(Bypass_config.FastCharge_Current, Bypass_config.FastCharge_Current);
+            Power_tool.edit_current(Bypass_config.FastCharge_Current, Bypass_config.FastCharge_Current); // 锁定睡眠
         }
         else
         {
@@ -122,7 +123,7 @@ int main()
     while (true)
     {
         auto config = config_tool.get_config();
-        std::this_thread::sleep_for(std::chrono::seconds(std::stoi(config["总开关"]["间隔时间"])));
+        std::this_thread::sleep_for(std::chrono::seconds(Bypass_config.Check_WaitTime));
         try {
             Temp = Power_tool.get_Temp();
             Capacity = Power_tool.get_Capacity();
@@ -138,21 +139,22 @@ int main()
                 Bypass_config.Bypass_Status = config["总开关"]["开启旁路供电"] == "1";
                 Bypass_config.Mode = (BypassMode)std::stoi(config["总开关"]["旁路模式"]);
                 Bypass_config.Input_WaitTime = std::stoi(config["总开关"]["插拔间隔"]);
+                Bypass_config.Check_WaitTime = std::stoi(config["总开关"]["间隔时间"]);
                 Bypass_config.Bypass_Current = std::stoi(config["总开关"]["旁路电流"]);
                 Bypass_config.Bypass_Always = config["总开关"]["一直开启旁路供电"] == "1";
             }//总开关
             {
-                Bypass_config.Bypass_Capacity_Status = config["电池电量"]["总开关"] == "1";
+                Bypass_config.Bypass_Capacity_Status = config["电池电量"]["开关状态"] == "1";
                 Bypass_config.Bypass_Capacity_Close = std::stoi(config["电池电量"]["关闭电量"]);
                 Bypass_config.Bypass_Capacity_Open = std::stoi(config["电池电量"]["开启电量"]);
             }//电池电量
             {
-                Bypass_config.Bypass_Temp_Status = config["电池温度"]["总开关"] == "1";
+                Bypass_config.Bypass_Temp_Status = config["电池温度"]["开关状态"] == "1";
                 Bypass_config.Bypass_Temp_Open = std::stof(config["电池温度"]["开启温度"]);
                 Bypass_config.Bypass_Temp_Close = std::stof(config["电池温度"]["关闭温度"]);
             }//电池温度
             {
-                Bypass_config.FastCharge_Status = config["闲时快充"]["总开关"] == "1";
+                Bypass_config.FastCharge_Status = config["闲时快充"]["开关状态"] == "1";
                 Bypass_config.FastCharge_Current = std::stoi(config["闲时快充"]["快充电流"]);
                 Bypass_config.FastCharge_CloseCapacity = std::stoi(config["闲时快充"]["关闭电量"]);
                 Bypass_config.FastCharge_CloseTemp = std::stof(config["闲时快充"]["关闭温度"]);
