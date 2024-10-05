@@ -9,12 +9,17 @@ echo "此安装脚本将会暂停30秒"
 echo "如果不想安装,请关闭安装工具或关机"
 sleep 30
 echo "正在安装旁路供电模块"
-echo "正在备份原有文件"
 cd $MODPATH
 mkdir $MODPATH/origin
-cp /sys/class/power_supply/battery/night_charging $MODPATH/origin/
-cp /sys/class/power_supply/battery/force_recharge $MODPATH/origin/
-cp /sys/class/power_supply/battery/input_suspend $MODPATH/origin/
-cp /sys/class/power_supply/battery/fast_charge_current $MODPATH/origin/
-cp /sys/class/power_supply/battery/thermal_input_current $MODPATH/origin/
-mv $MODPATH/bypass_charge.ini /data/adb/
+# 检查指定路径下的配置文件是否存在
+if [ -f /data/adb/modules/bypass_charge/bypass_charge.ini ]; then
+    echo "正在备份原有文件"
+    cp /sys/class/power_supply/battery/night_charging $MODPATH/origin/
+    cp /sys/class/power_supply/battery/force_recharge $MODPATH/origin/
+    cp /sys/class/power_supply/battery/input_suspend $MODPATH/origin/
+    cp /sys/class/power_supply/battery/fast_charge_current $MODPATH/origin/
+    cp /sys/class/power_supply/battery/thermal_input_current $MODPATH/origin/
+    mv $MODPATH/bypass_charge.ini /data/adb/
+else
+    echo "检测到此次是更新操作，不进行备份"
+fi
