@@ -10,7 +10,7 @@ else
     set_strip("all")
     set_optimize("fastest")
 end
-target("main")
+target("binary")
     add_includedirs(
     "include/Log",
     "include/power",
@@ -21,6 +21,33 @@ target("main")
     set_arch("arm64-v8a")
     set_kind("binary")
     add_files("src/*.cpp")
+target_end()
+target("module")
+    add_includedirs(
+    "include/Log",
+    "include/power",
+    "include/config",
+    "include/activity",
+    "include/file"
+    )
+    set_arch("arm64-v8a")
+    set_kind("binary")
+    add_files("src/*.cpp")
+    after_build(function (target)
+        import("core.project.project")
+        -- 获取编译产物的路径
+        local output_dir = target:targetdir()
+        local output_file = target:targetfile()
+        os.cp("MagiskModule",output_dir)
+        os.cp(output_file,output_dir.."/MagiskModule")
+        os.cd(output_dir)
+        os.rm("module.zip")
+        os.rm("module")
+        os.cd("MagiskModule")
+        os.exec("zip -r ../module.zip .")
+        os.cd("..")
+        os.rm("MagiskModule/")
+    end)
 target_end()
 
 -- If you want to known more usage about xmake, please see https://xmake.io
