@@ -16,7 +16,8 @@ jobs:
     - name: 配置软件环境
       run: | 
         sudo apt-get update
-        sudo apt-get install clang clang++ xmake build-essential git gcc g++ make cmake
+        curl -fsSL https://xmake.io/shget.text | bash
+        sudo apt-get install clang clang++ build-essential git gcc g++ make cmake
         sudo apt-get upgrade
     - uses: nttld/setup-ndk@v1
       with:
