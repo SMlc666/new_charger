@@ -204,7 +204,7 @@ int main()
                         break;
                     }
                 }
-                if (findgame)
+                if (findgame && Info.Event == Bypass_Event::None)
                 {
                     if (Info.FastCharge_Status)
                     {
