@@ -27,5 +27,5 @@ jobs:
         local-cache: true
     - name: 编译软件
       run: |
-        xmake f --host=android -m release -a arm64-v8a --ndk=$ANDROID_NDK_HOME -p android
+        xmake f --host=android -m release -a arm64-v8a -p android
         xmake
