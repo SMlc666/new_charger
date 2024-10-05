@@ -1,4 +1,4 @@
-MODPATH=${0%/*}
+MODPATH=${0%/*}/..
 echo "欢迎使用旁路供电模块"
 echo "此模块可能会对您的设备造成一些不可消除的影响"
 echo "因为此模块的功能尚未完全测试，可能存在一些bug"
@@ -17,3 +17,4 @@ cp /sys/class/power_supply/battery/force_recharge $MODPATH/origin/
 cp /sys/class/power_supply/battery/input_suspend $MODPATH/origin/
 cp /sys/class/power_supply/battery/fast_charge_current $MODPATH/origin/
 cp /sys/class/power_supply/battery/thermal_input_current $MODPATH/origin/
+mv $MODPATH/bypass_charge.ini /data/adb/
