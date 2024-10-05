@@ -23,8 +23,8 @@ struct Charge_Info
 struct Bypass_Config {
     bool Bypass_Status = false;
     BypassMode Mode = BypassMode::Current;//旁路模式
-    int Check_WaitTime = 0;
-    int Input_WaitTime = 0;
+    int Check_WaitTime = 30;
+    int Input_WaitTime = 5;
     int Bypass_Current = 0;
     bool Bypass_Always = false;//一直开启旁路供电
     bool Bypass_Temp_Status = false;//温度旁路供电
@@ -38,7 +38,7 @@ struct Bypass_Config {
     int FastCharge_CloseCapacity = 0;//闲时快充关闭电量
     int FastCharge_CloseTemp = 0;//闲时快充关闭温度
     bool Battery_Info = false;//显示电池信息
-    int Battery_Info_WaitTime = 0;
+    int Battery_Info_WaitTime = 120;
     std::map<std::string, std::string> Game_List;//游戏列表
 };
 Log logger("/sdcard/test.txt", LogLevel::INFO);
