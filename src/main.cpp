@@ -206,9 +206,15 @@ int main()
                 }
                 if (findgame)
                 {
+                    if (Info.FastCharge_Status)
+                    {
+                        Info.FastCharge_Status = false;
+                        logger.write(LogLevel::INFO, "游戏旁路供电开启,闲时快充关闭");
+                    }else{
+                        logger.write(LogLevel::INFO, "游戏旁路供电开启");
+                    }
                     Info.Event = Bypass_Event::Game;
                     Info.Bypass_Status = true;
-                    logger.write(LogLevel::INFO, "游戏旁路供电开启");
                     continue;
                 }
                 else if (Info.Bypass_Status && Info.Event == Bypass_Event::Game)
