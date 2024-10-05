@@ -41,7 +41,7 @@ struct Bypass_Config {
     int Battery_Info_WaitTime = 120;
     std::map<std::string, std::string> Game_List;//游戏列表
 };
-Log logger("/sdcard/test.txt", LogLevel::INFO);
+Log logger("/data/adb/", LogLevel::INFO);
 Config config_tool;
 power Power_tool(logger);
 Bypass_Config Bypass_config;
