@@ -18,8 +18,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install clang clang++ xmake build-essential git gcc g++ make cmake
         sudo apt-get upgrade
-
-    - name: 配置Android_NDK
-      - uses: actions/checkout@v3
-        with:
-          ndk-version: r27
+    - uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: r27
+      
