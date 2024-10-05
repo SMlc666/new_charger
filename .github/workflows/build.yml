@@ -18,9 +18,10 @@ jobs:
         sudo apt-get install aptitude
         sudo aptitude update
         curl -fsSL https://xmake.io/shget.text | bash
-        sudo aptitude install clang clang++ build-essential git gcc g++ make cmake
+        source ~/.xmake/profile
+        sudo aptitude install clang build-essential git gcc make cmake llvm lld
         sudo aptitude upgrade
     - uses: nttld/setup-ndk@v1
       with:
         ndk-version: r27
-      
+    - name: 编译软件

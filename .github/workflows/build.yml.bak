@@ -14,12 +14,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: 配置软件环境
-      run: | 
-        sudo apt-get update
+      run: |
+        sudo apt-get install aptitude
+        sudo aptitude update
         curl -fsSL https://xmake.io/shget.text | bash
-        sudo apt-get install clang clang++ build-essential git gcc g++ make cmake
-        sudo apt-get upgrade
+        source ~/.xmake/profile
+        sudo aptitude install clang build-essential git gcc make cmake
+        sudo aptitude upgrade
     - uses: nttld/setup-ndk@v1
       with:
         ndk-version: r27
-      
+    - name: 编译软件
