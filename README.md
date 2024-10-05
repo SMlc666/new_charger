@@ -17,7 +17,9 @@
   - Topic 1:
     - 安装xmake(构建管理) Android-NDK r27(配置方法见xmake官方文档) or 其他交叉编译工具链
   - Topic 2:
-    - git clone https://github.com/SMlc666/new_charger.git(git这个项目地址)
-    - cd new_charger(或者你指定的项目文件夹)
-    - xmake f -a arm64-v8a -m release -p android --ndk=your_ndk_dir(配置构建管理)
-    - xmake(开始构建)
+  - #### git clone这个项目远程仓库链接
+        git clone https://github.com/SMlc666/new_charger.git
+  - #### 开始构建
+        cd new_charger
+        xmake f -a arm64-v8a -m release -p android --ndk=your_ndk_dir
+        xmake build
