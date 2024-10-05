@@ -140,7 +140,7 @@ int main()
                 Bypass_config.Mode = (BypassMode)std::stoi(config["总开关"]["旁路模式"]);
                 Bypass_config.Input_WaitTime = std::stoi(config["总开关"]["插拔间隔"]);
                 Bypass_config.Check_WaitTime = std::stoi(config["总开关"]["间隔时间"]);
-                Bypass_config.Bypass_Current = std::stoi(config["总开关"]["旁路电流"]);
+                Bypass_config.Bypass_Current = std::stoi(config["总开关"][" 电流"]);
                 Bypass_config.Bypass_Always = config["总开关"]["一直开启旁路供电"] == "1";
             }//总开关
             {
