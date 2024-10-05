@@ -197,7 +197,7 @@ int main()
                 bool findgame = false;
                 for (const auto& pair : Bypass_config.Game_List)
                 {
-                    if (activity_tool.getForegroundAppPackageName() == pair.second)
+                    if (activity_tool.isAppRunning(pair.second))
                     {
                         findgame = true;
                         logger.write(LogLevel::INFO, "找到游戏:" + pair.second);
