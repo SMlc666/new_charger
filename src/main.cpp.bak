@@ -304,15 +304,12 @@ int main()
         }
         else if (Status != BatteryStatus::Charging && Info.FastCharge_Status)
         {
-            
-            Info.FastCharge_Status = false;
-            logger.write(LogLevel::INFO, "不处于充电状态,自动关闭闲时快充");
-        }
-        else if (!Have_USB && Info.Bypass_Status) {
             Info.Event = Bypass_Event::None;
             Info.Bypass_Status = false;
-            logger.write(LogLevel::INFO, "没有检测到USB插入,自动关闭旁路供电");
+            Info.FastCharge_Status = false;
+            logger.write(LogLevel::INFO, "不处于充电状态,自动关闭旁路供电");
         }
+        else if ()
     }
     return 0;
 }

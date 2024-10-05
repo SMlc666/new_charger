@@ -72,7 +72,7 @@ public:
     } // 瓦
     bool have_Usb()
     {
-        return Present_file->get_value<bool>();
+        return Present_File->get_value<bool>();
     }//获取USB插入状态
     bool edit_current(int FastChargeCurrent, int ThermalChargeCurrent)
     {
