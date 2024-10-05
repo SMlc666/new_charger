@@ -207,6 +207,7 @@ int main()
                     Info.Event = Bypass_Event::Game;
                     Info.Bypass_Status = true;
                     logger.write(LogLevel::INFO, "游戏旁路供电开启");
+                    continue;
                 }
                 else if (Info.Bypass_Status && Info.Event == Bypass_Event::Game)
                 {
