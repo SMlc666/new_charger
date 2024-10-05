@@ -4,6 +4,7 @@
 #include "activity.hpp"
 #include <thread>
 #include <chrono>
+#include <unordered_map>
 enum Bypass_Event
 {
     None,
@@ -80,22 +81,23 @@ void lock()
         }
     }
 }
+
 void info()
 {
-    auto to_string = [](BatteryStatus status) -> std::string {
-        static const std::unordered_map<BatteryStatus, std::string> status_map = {
-            {BatteryStatus::Unknown, "Unknown"},
-            {BatteryStatus::Charging, "Charging"},
-            {BatteryStatus::Discharging, "Discharging"},
-            {BatteryStatus::Full, "Full"}
+    auto to_string = [](BatteryStatus status) -> std::string
+        {
+            static const std::unordered_map<BatteryStatus, std::string> status_map = {
+                {BatteryStatus::Unknown, "Unknown"},
+                {BatteryStatus::Charging, "Charging"},
+                {BatteryStatus::Discharging, "Discharging"},
+                {BatteryStatus::Full, "Full"}
+            };
+            auto it = status_map.find(status);
+            if (it != status_map.end()) {
+                return it->second;
+            }
+            return "Unknown";
         };
-    
-        auto it = status_map.find(status);
-        if (it != status_map.end()) {
-            return it->second;
-        }
-        return "Unknown";
-    };
     while (true)
     {
         float Temp = Power_tool.get_Temp();
@@ -126,8 +128,9 @@ int main()
             Capacity = Power_tool.get_Capacity();
             Power = Power_tool.get_Power();
             Status = Power_tool.get_Status();
-        } catch (const std::exception& e){
-            logger.write(LogLevel::ERROR,"Read battery information failed");
+        }
+        catch (const std::exception& e) {
+            logger.write(LogLevel::ERROR, "Read battery information failed");
             continue;
         }
         try {
@@ -161,7 +164,8 @@ int main()
             {
                 Bypass_config.Game_List = config["游戏"];
             }//游戏
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e) {
             logger.write(LogLevel::ERROR, "Can't read config:" + std::string(e.what()));
             continue;
         }//从配置文件中读取配置
@@ -189,7 +193,7 @@ int main()
             if (!Info.Bypass_Status || Info.Event == Bypass_Event::Game)
             {
                 bool findgame = false;
-                for (const auto &pair : Bypass_config.Game_List)
+                for (const auto& pair : Bypass_config.Game_List)
                 {
                     if (activity_tool.getForegroundAppPackageName() == pair.second)
                     {
@@ -264,25 +268,25 @@ int main()
                 logger.write(LogLevel::INFO, "温度旁路供电关闭");
             }
             if (Bypass_config.FastCharge_Status)
+            {
+                if (!Info.Bypass_Status && !Info.FastCharge_Status && Capacity < Bypass_config.FastCharge_CloseCapacity && Temp < Bypass_config.FastCharge_CloseTemp)
                 {
-                    if (!Info.Bypass_Status && !Info.FastCharge_Status && Capacity < Bypass_config.FastCharge_CloseCapacity && Temp < Bypass_config.FastCharge_CloseTemp)
-                    {
-                        Info.FastCharge_Status = true;
-                        logger.write(LogLevel::INFO, "闲时快充开启");
-                    }
-                    else if (Info.FastCharge_Status && ((Capacity >= Bypass_config.FastCharge_CloseCapacity) || (Temp >= Bypass_config.FastCharge_CloseTemp)))
-    
-                    {
-                        Info.FastCharge_Status = false;
-                        logger.write(LogLevel::INFO, "闲时快充关闭");
-                    }
+                    Info.FastCharge_Status = true;
+                    logger.write(LogLevel::INFO, "闲时快充开启");
                 }
-                else if (Info.FastCharge_Status && !Bypass_config.FastCharge_Status)
+                else if (Info.FastCharge_Status && ((Capacity >= Bypass_config.FastCharge_CloseCapacity) || (Temp >= Bypass_config.FastCharge_CloseTemp)))
+
                 {
                     Info.FastCharge_Status = false;
                     logger.write(LogLevel::INFO, "闲时快充关闭");
                 }
             }
+            else if (Info.FastCharge_Status && !Bypass_config.FastCharge_Status)
+            {
+                Info.FastCharge_Status = false;
+                logger.write(LogLevel::INFO, "闲时快充关闭");
+            }
+        }
         else if (Status != BatteryStatus::Charging && (Info.Bypass_Status || Info.FastCharge_Status))
         {
             Info.Event = Bypass_Event::None;
