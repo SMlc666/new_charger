@@ -223,9 +223,11 @@ int main()
                     {
                         Info.FastCharge_Status = false;
                         logger.write(LogLevel::INFO, "温度旁路供电开启,闲时快充关闭");
+                    }else{
+                        logger.write(LogLevel::INFO, "温度旁路供电开启");
                     }
                     Info.Event = Bypass_Event::Capacity;
-                    Info.Bypass_Status = false;
+                    Info.Bypass_Status = true;
                     continue;
                 }
                 else if (Info.Event == Bypass_Event::Temp && Temp < Bypass_config.Bypass_Temp_Close)
@@ -249,6 +251,8 @@ int main()
                     {
                         Info.FastCharge_Status = false;
                         logger.write(LogLevel::INFO, "电量旁路供电开启,闲时快充关闭");
+                    }else{
+                        logger.write(LogLevel::INFO, "电量旁路供电开启");
                     }
                     Info.Event = Bypass_Event::Capacity;
                     Info.Bypass_Status = true;
@@ -265,7 +269,7 @@ int main()
             {
                 Info.Event = Bypass_Event::None;
                 Info.Bypass_Status = false;
-                logger.write(LogLevel::INFO, "温度旁路供电关闭");
+                logger.write(LogLevel::INFO, "电量旁路供电关闭");
             }
             if (Bypass_config.FastCharge_Status)
             {
