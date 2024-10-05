@@ -21,4 +21,4 @@ jobs:
     - name: 配置Android_NDK
       - uses: actions/checkout@v3
         with:
-          ndk-version: r27
+          ndk-version: r26d
