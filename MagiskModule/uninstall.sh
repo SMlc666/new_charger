@@ -1,3 +1,4 @@
+#!/bin/bash
 MODDIR=${0%/*}
 
 rm -rf /data/adb/bypass_charge.log
