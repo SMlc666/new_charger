@@ -19,9 +19,11 @@ jobs:
         sudo aptitude update
         curl -fsSL https://xmake.io/shget.text | bash
         source ~/.xmake/profile
-        sudo aptitude install clang build-essential git gcc make cmake
+        sudo aptitude install clang build-essential git gcc make cmake llvm lld
         sudo aptitude upgrade
     - uses: nttld/setup-ndk@v1
       with:
         ndk-version: r27
     - name: 编译软件
+      run: |
+        xmake f -a arm64-v8a -m release -p android-21 --ndk
