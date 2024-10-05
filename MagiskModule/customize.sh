@@ -1,70 +1,26 @@
-##########################################################################################
-#
-# MMT Extended Config Script
-#
-##########################################################################################
-
-##########################################################################################
-# Config Flags
-##########################################################################################
-
-# Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maximum android version for your mod
-# Uncomment DYNLIB if you want libs installed to vendor for oreo+ and system for anything older
-# Uncomment PARTOVER if you have a workaround in place for extra partitions in regular magisk install (can mount them yourself - you will need to do this each boot as well). If unsure, keep commented
-# Uncomment PARTITIONS and list additional partitions you will be modifying (other than system and vendor), for example: PARTITIONS="/odm /product /system_ext"
-#MINAPI=21
-#MAXAPI=25
-#DYNLIB=true
-#PARTOVER=true
-#PARTITIONS=""
-
-##########################################################################################
-# Replace list
-##########################################################################################
-
-# List all directories you want to directly replace in the system
-# Check the documentations for more info why you would need this
-
-# Construct your list in the following format
-# This is an example
-REPLACE_EXAMPLE="
-/system/app/Youtube
-/system/priv-app/SystemUI
-/system/priv-app/Settings
-/system/framework
-"
-
-# Construct your own list here
-REPLACE="
-"
-
-##########################################################################################
-# Permissions
-##########################################################################################
-
-set_permissions() {
-  : # Remove this if adding to this function
-
-  # Note that all files/folders in magisk module directory have the $MODPATH prefix - keep this prefix on all of your files/folders
-  # Some examples:
-  
-  # For directories (includes files in them):
-  # set_perm_recursive  <dirname>                <owner> <group> <dirpermission> <filepermission> <contexts> (default: u:object_r:system_file:s0)
-  
-  # set_perm_recursive $MODPATH/system/lib 0 0 0755 0644
-  # set_perm_recursive $MODPATH/system/vendor/lib/soundfx 0 0 0755 0644
-
-  # For files (not in directories taken care of above)
-  # set_perm  <filename>                         <owner> <group> <permission> <contexts> (default: u:object_r:system_file:s0)
-  
-  # set_perm $MODPATH/system/lib/libart.so 0 0 0644
-  # set_perm /data/local/tmp/file.txt 0 0 644
-}
-
-##########################################################################################
-# MMT Extended Logic - Don't modify anything after this
-##########################################################################################
-
-SKIPUNZIP=1
-unzip -qjo "$ZIPFILE" 'common/functions.sh' -d $TMPDIR >&2
-. $TMPDIR/functions.sh
+MODPATH=${0%/*}
+echo "欢迎使用旁路供电模块"
+echo "此模块可能会对您的设备造成一些不可消除的影响"
+echo "因为此模块的功能尚未完全测试，可能存在一些bug"
+echo "由于此模块所造成的损失，作者不承担任何责任"
+echo "在使用时可能会出现一些问题，请谨慎操作"
+echo "如有任何问题，请联系作者"
+echo "此安装脚本将会暂停30秒"
+echo "如果不想安装,请关闭安装工具或关机"
+sleep 30
+echo "正在安装旁路供电模块"
+cd $MODPATH
+cp -f $MODPATH/bypass_charge.ini /data/adb/bypass_charge.ini
+rm -f $MODPATH/bypass_charge.ini
+# 检查指定路径下的配置文件是否存在
+if [ -f /data/adb/modules/bypass_charge/bypass_charge.ini ]; then
+    echo "正在备份原有文件"
+    mkdir $MODPATH/origin
+    cp -f /sys/class/power_supply/battery/night_charging $MODPATH/origin/night_charging
+    cp -f /sys/class/power_supply/battery/force_recharge $MODPATH/origin/force_recharge
+    cp -f /sys/class/power_supply/battery/input_suspend $MODPATH/origin/input_suspend
+    cp -f /sys/class/power_supply/battery/fast_charge_current $MODPATH/origin/fast_charge_current
+    cp -f /sys/class/power_supply/battery/thermal_input_current $MODPATH/origin/thermal_input_current
+else
+    echo "检测到此次是更新操作，不进行备份"
+fi

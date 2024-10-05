@@ -1,6 +1,7 @@
-id=NEW_BYPASSCHARGER
+# id 只能填 字母 数字 半角符号
+id=bypassCharger
 name=旁路供电模块
-version=v1
-versionCode=1
+version=v6
+versionCode=6
 author=神墨
-description=适用于红米note10pro的magisk模块
+description=旁路供电,c++编写,配置文件/data/adb/bypass_charge.ini 日志文件/data/adb/bypass_charger.log
