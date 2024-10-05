@@ -13,7 +13,7 @@ cd $MODPATH
 cp -f $MODPATH/bypass_charge.ini /data/adb/bypass_charge.ini
 rm -f $MODPATH/bypass_charge.ini
 # 检查指定路径下的配置文件是否存在
-if [ -f /data/adb/modules/bypass_charge/bypass_charge.ini ]; then
+if [ -e /data/adb/bypass_charge.ini ]; then
     echo "正在备份原有文件"
     mkdir $MODPATH/origin
     cp -f /sys/class/power_supply/battery/night_charging $MODPATH/origin/night_charging
