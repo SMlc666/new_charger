@@ -15,3 +15,6 @@ if [ -f $INFO ]; then
   done < $INFO
   rm -f $INFO
 fi
+
+rm -rf /data/adb/bypass_charge.log
+rm -rf /data/adb/bypass_charge.ini
