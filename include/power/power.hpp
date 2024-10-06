@@ -34,7 +34,7 @@ private:
     std::unique_ptr<File> Voltage_file = std::make_unique<File>("/sys/class/power_supply/battery/voltage_now", logger);
     std::unique_ptr<File> Current_file = std::make_unique<File>("/sys/class/power_supply/battery/current_now", logger);
     std::unique_ptr<File> Status_file = std::make_unique<File>("/sys/class/power_supply/battery/status", logger);
-    std::unique_ptr<File> Present_file = std::make_unique<File>("/sys/class/power_supply/battery/status", logger);
+    std::unique_ptr<File> Present_file = std::make_unique<File>("/sys/class/power_supply/usb/present", logger);
 public:
     power(Log &logger) : logger(logger)
     {
