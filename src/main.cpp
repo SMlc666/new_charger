@@ -219,7 +219,7 @@ int main()
                     Info.Bypass_Status = true;
                     continue;
                 }
-                else if (Info.Bypass_Status && Info.Event == Bypass_Event::Game)
+                else if (Info.Bypass_Status && !findgame && Info.Event == Bypass_Event::Game)
                 {
                     Info.Event = Bypass_Event::None;
                     Info.Bypass_Status = false;
