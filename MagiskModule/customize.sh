@@ -16,11 +16,11 @@ rm -f $MODPATH/bypass_charge.ini
 if [ -e /data/adb/bypass_charge.ini ]; then
     echo "正在备份原有文件"
     mkdir $MODPATH/origin
-    cp -f /sys/class/power_supply/battery/night_charging $MODPATH/origin/night_charging
-    cp -f /sys/class/power_supply/battery/force_recharge $MODPATH/origin/force_recharge
     cp -f /sys/class/power_supply/battery/input_suspend $MODPATH/origin/input_suspend
     cp -f /sys/class/power_supply/battery/fast_charge_current $MODPATH/origin/fast_charge_current
     cp -f /sys/class/power_supply/battery/thermal_input_current $MODPATH/origin/thermal_input_current
 else
+    rm -rf $MODPATH/origin/force_recharge
+    rm -rf $MODPATH/origin/night_charging
     echo "检测到此次是更新操作，不进行备份"
 fi
