@@ -192,7 +192,7 @@ int main()
                 continue;
             }
         }
-        if (Status == BatteryStatus::Charging)
+        if (Status == BatteryStatus::Charging || Have_USB)
         {
             if (!Info.Bypass_Status || Info.Event == Bypass_Event::Game)
             {
