@@ -24,8 +24,6 @@ private:
     Log &logger;
     int Origin_FastCharge_Current;
     int Origin_ThermalCharge_Current;
-    std::unique_ptr<File> NightCharge_file = std::make_unique<File>("/sys/class/power_supply/battery/night_charging", logger);
-    std::unique_ptr<File> ReCharge_file = std::make_unique<File>("/sys/class/power_supply/battery/force_recharge", logger);
     std::unique_ptr<File> Input_file = std::make_unique<File>("/sys/class/power_supply/battery/input_suspend", logger);
     std::unique_ptr<File> FastCharge_file = std::make_unique<File>("/sys/class/power_supply/battery/fast_charge_current", logger);
     std::unique_ptr<File> ThermalCharge_file = std::make_unique<File>("/sys/class/power_supply/battery/thermal_input_current", logger);
@@ -107,15 +105,10 @@ public:
         {
             if (status)
             {
-                NightCharge_file->trunc_write("1");
-                ReCharge_file->trunc_write("1");
-                std::this_thread::sleep_for(std::chrono::milliseconds(wait_time));
                 Input_file->trunc_write("1");
             }
             else
             {
-                NightCharge_file->trunc_write("0");
-                ReCharge_file->trunc_write("0");
                 Input_file->trunc_write("0");
             }
         }
